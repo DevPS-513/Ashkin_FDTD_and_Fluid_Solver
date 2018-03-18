@@ -1,0 +1,8 @@
+./exported_figures/AB_up.pdf: ./figures/AB_quiv_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_quiv_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_quiv_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_quiv_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_quiv_up_1.dat
+./exported_figures/AB_up.pdf: ./figures/AB_vel_quiv_up_241.dat
+./exported_figures/AB_up.pdf: ./figures/AB_front_up_241.dat
