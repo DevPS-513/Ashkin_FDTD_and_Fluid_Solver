@@ -60,7 +60,7 @@ for q=2:Nxp-1
     
 end
 
-if(max(max(abs(old_p-p)./old_p)) <tol)
+if(max(max(abs(old_p-p))) <tol)
     break
 end
 

@@ -1,6 +1,6 @@
 function [uf,vf]= bilinear_interp_front(u,v,xf_mat,yf_mat,dx,dy,Nf)
-uf=zeros(1,Nf+2);
-vf=zeros(1,Nf+2);
+uf=zeros(1,Nf);
+vf=zeros(1,Nf);
 for q=2:Nf+1
 
     

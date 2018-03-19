@@ -1,4 +1,0 @@
-./exported_figures/AMP_down.pdf: ./figures/AMP_quiv_down_1.dat
-./exported_figures/AMP_down.pdf: ./figures/AMP_front_down_1.dat
-./exported_figures/AMP_down.pdf: ./figures/AMP_vel_quiv_down_241.dat
-./exported_figures/AMP_down.pdf: ./figures/AMP_front_down_241.dat

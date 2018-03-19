@@ -18,10 +18,8 @@ yf=zeros(1,Nf+2);
 xf(1,2:end-1)=xf_c;
 yf(1,2:end-1)=yf_c;
 
-xf(1,2:end-1)=circshift(xf(1,2:end-1)',round(Nf/4));
-yf(1,2:end-1)=circshift(yf(1,2:end-1)',round(Nf/4));
-xf=xf';
-yf=yf';
+
+
 xf(1)=xf(Nf+1);
 yf(1)=yf(Nf+1);
 xf(Nf+2)=xf(2);

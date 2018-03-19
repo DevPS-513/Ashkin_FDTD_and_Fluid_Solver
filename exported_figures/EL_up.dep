@@ -1,4 +1,0 @@
-./exported_figures/EL_up.pdf: ./figures/EL_quiv_up_1.dat
-./exported_figures/EL_up.pdf: ./figures/EL_front_up_1.dat
-./exported_figures/EL_up.pdf: ./figures/EL_vel_quiv_up_241.dat
-./exported_figures/EL_up.pdf: ./figures/EL_front_up_241.dat

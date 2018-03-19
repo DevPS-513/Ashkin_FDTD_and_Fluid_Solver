@@ -966,7 +966,7 @@ dx_norm=1/Nx_CFD;
 dy_norm=1/Ny_CFD;
 
 x_fx_cfd=[0:1:Nx_CFD-1]./(Nx_CFD-1);
-y_fx_cfd=[-.5:1:Ny_CFD-1.5]./(Ny_CFD-1);
+y_fx_cfd=[.5:1:Ny_CFD-1.5]./(Ny_CFD-1);
 
 [XC YC]=meshgrid(x_fx_cfd,y_fx_cfd);
 fx_EM=interp2(Xfx,Yfx,fx_avg(nx1-1:nx2+1,ny1-1:ny2+1),XC,YC);
@@ -982,7 +982,7 @@ y_fy=y_fy-y_norm_1;
 y_fy=y_fy./(y_norm_2-y_norm_1);
 [Xfy,Yfy]=meshgrid(x_fy,y_fy);
 
-x_fy_cfd=[-.5:1:Nx_CFD-1.5]./(Nx_CFD-1);
+x_fy_cfd=[.5:1:Nx_CFD-1.5]./(Nx_CFD-1);
 y_fy_cfd=[0:1:Ny_CFD-1]./(Ny_CFD-1);
 
 [XC YC]=meshgrid(x_fy_cfd,y_fy_cfd);
