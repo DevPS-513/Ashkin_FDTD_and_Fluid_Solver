@@ -63,9 +63,10 @@ addpath functions
 addpath material_data
 
 
- models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
+% models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
 
   
+models=cellstr(['AB ';'EL ';'AMP';'Chu']);
 s_cases=cellstr(['down';'up  ']);
 
 mkdir('./output_data/')
@@ -100,7 +101,7 @@ for model_j=1:length(models)
     
  % Turn Figure plotting on or off    
     plot_on=1;                      % This will display Density over time
-    plot_on_EM=1;                   % This will display the EM field
+    plot_on_EM=0;                   % This will display the EM field
     save_mode=1;                    % This will save all workspace variables after
                  
 
@@ -154,21 +155,26 @@ end
 
 %% CFD Parameters
 
-    Lx=1;
-    Ly=1;
+    Lx=2;
+    Ly=2;
     Nx=72;
     Ny=72;
     source_direction=s_case;
 
-    time_steps=9680;
+    time_steps=12500;
     dt=.00125;                  % CFD time step
-    
-    beam_start_time=8*seconds;    
-    beam_start=round(beam_start_time/dt);         % number of time steps before beam engages
+    Nt=time_steps;
+    t=[0:1:time_steps]*dt;
+
    
     beam_recalculate_time=0.2*seconds;          % Wait this amount of time before recalculateing the force distribution
     beam_recalculate=round(beam_recalculate_time/dt);
+  
+     beam_start_time=t(Nt)-4*beam_recalculate_time;    
+    beam_start=round(beam_start_time/dt);         % number of time steps before beam engages
    
+    
+    
     beam_refresh_counter=0;                         % Counter that rolls over every
     
     
@@ -192,14 +198,12 @@ end
     min_rho=min([ rho1 rho2]);
     rho_diff=abs(rho1-rho2)/2;
 
-    surf_tension=0.3;            % Surface Tension Coefficient
+    surf_tension=0.7;            % Surface Tension Coefficient
     mu1=.01;
     mu2=2*mu1;
     max_mu=max([mu1 mu2]);
 
 
-    t=[0:1:time_steps]*dt;
-    Nt=time_steps;
 
 
 %% Initialize output matricies
@@ -250,7 +254,7 @@ end
     beam_width=2*LAMBDA;
     x_size=4*beam_width;
     y_size=(Ly/Lx)*x_size;
-    sim_cycles=1.33*y_size/(LAMBDA/max([er_low er_high])); % time it takes for wave to get across simulation space
+    sim_cycles=1.0*y_size/(LAMBDA/max([er_low er_high]));
     
                             % this should only be after the fluid conforms
                             % to the container (i.e settles down)
@@ -280,12 +284,12 @@ end
         
 
         x_ellipse=round((round(Nx/2)-1));
-        y_ellipse=round((ny2-ny1)/2.5);
+        y_ellipse=round((ny2-ny1)/1.7);
         
         mid_y=round(2+y_ellipse);
         mid_x=round((Nx+2)/2);
 
-        n_ellipse=6;
+        n_ellipse=3;
         
     for i=1:Nx+2
         for j=1:Ny+2
@@ -298,7 +302,9 @@ end
     
    % r(nx1:nx2,ny1:ny2)=rho2;
 
-    [Nf,xf,yf]=create_front_v2(r,x,y,dx,dy);
+    [Nf,xf,yf]=create_front_v2(r,x,y,dx,dy,60);
+ 
+
     mu=mu1.*(r==rho1)+mu2.*(r==rho2);
 
 %Create from density contour
@@ -306,6 +312,7 @@ end
 
     [xf,yf,Nf]=resize_front(xf,yf,dx,dy,Nf);
     
+   
 % front velocities
 
     uf=zeros(1,Nf+2);
@@ -339,8 +346,8 @@ if plot_on==1
     % Figure of fluid density
     figure(3)
     h_31=surf(x,y,r');
-    xlim([-.1 1.1])
-    ylim([-.1 1.1])
+    xlim([-.1 1.1*Lx])
+    ylim([-.1 1.1*Ly])
     caxis([ .9 1.3])
     shading flat
     view([ 0 90])
