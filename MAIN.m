@@ -99,8 +99,8 @@ for model_j=1:length(models)
 
     
  % Turn Figure plotting on or off    
-    plot_on=0;                      % This will display Density over time
-    plot_on_EM=0;                   % This will display the EM field
+    plot_on=1;                      % This will display Density over time
+    plot_on_EM=1;                   % This will display the EM field
     save_mode=1;                    % This will save all workspace variables after
                  
 
