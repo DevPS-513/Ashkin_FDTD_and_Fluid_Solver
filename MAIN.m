@@ -63,11 +63,9 @@ addpath functions
 addpath material_data
 
 
-% models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
+ models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
 
   
- models=cellstr(['MN ';'EL ';'AMP';'Chu']);
-% models=cellstr(['MN'])
 s_cases=cellstr(['down';'up  ']);
 
 mkdir('./output_data/')
@@ -250,9 +248,9 @@ end
     dx_EM=32*nm;    
     dy_EM=dx;
     beam_width=2*LAMBDA;
-    x_size=3*beam_width;
+    x_size=4*beam_width;
     y_size=(Ly/Lx)*x_size;
-    sim_cycles=1.0*y_size/(LAMBDA/max([er_low er_high]));
+    sim_cycles=1.33*y_size/(LAMBDA/max([er_low er_high])); % time it takes for wave to get across simulation space
     
                             % this should only be after the fluid conforms
                             % to the container (i.e settles down)
