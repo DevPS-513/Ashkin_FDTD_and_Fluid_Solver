@@ -1,7 +1,7 @@
 
 
 
-function [fx_EM,fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg]=casner_EM_code_best(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x_CFD,y_CFD,xf_locs,yf_locs,er_low,er_high,LAMBDA,dx,beam_width,x_size,y_size,a,sim_cycles,model,plot_on,source_direction)
+function [fx_EM,fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg]=FDTD(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x_CFD,y_CFD,xf_locs,yf_locs,er_low,er_high,LAMBDA,dx,beam_width,x_size,y_size,a,sim_cycles,model,plot_on,source_direction)
 
 
 meters=1;
@@ -588,155 +588,155 @@ eta_EM=sqrt(er(nx1:nx2,ny1:ny2)./mr(nx1:nx2,ny1:ny2))';
         Hz(nxg1:nxg2,source1_y)=a_o*gauss_x(nxg1:nxg2)'.*(a/(2*eta_o*eta_r)).*sin(2*pi*f*(t(n)))+ Hz(nxg1:nxg2,source1_y);            % X- Guassian %         
     
 
+
 if (strcmp(model,'MN'))
-    %[W]=calculate_W_MN(c^2,i_W,j_W,Dx,Dx_n_prev,Dy,Dy_n_prev,Bz,Bz_n_prev,dx,dy,dt,W);
-   
-  % MOMENTUM and T calculations 
+%[W]=calculate_W_MN(c^2,i_W,j_W,Dx,Dx_n_prev,Dy,Dy_n_prev,Bz,Bz_n_prev,dx,dy,dt,W);
+% turn off W calculation for speed
+%    W(source1_x-1:source1_x+1,gi)=0;                                   % Remove energy at source location
+
     Bz_at_y(i,j)=(1/4)*(Bz(i,j)+Bz(i-1,j)+Bz_n_prev(i,j)+Bz_n_prev(i-1,j));
-    Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
-    
+  Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
+  
+  % Bring Bz in space to Dx, but not in time
+  
+    Bz_at_x(i,j)=(1/2)*(Bz(i,j)+Bz(i,j-1));
+
+  
     G_x_n_prev=G_x;
     G_x(i,j)=Dy(i,j).*Bz_at_y(i,j);                  % G_MN=DXB
-   
+    Sx(i,j)=(Dy(i,j).*Bz_at_y(i,j)).*c^2;
+    
     G_y_n_prev=G_y;
-    G_y(i,j)=-1*Dx(i,j).*Bz_at_x(i,j); 
+    % Ty is at Ex
+	 
+	 % bring Dx to B in time
+   
+        %Dx_av=(0.5).*(Dx(i,j)+Dx(i,j+1)); % only to place Ty at Bz
+        Dx_av=(0.5).*(Dx(i,j)+Dx_n_prev(i,j)); % only to place Ty at Bz
+
+	% Bring Dx to B temporally
+   % Gy(i,j)=Ez_at_Bx(i,j).*Hx(i,j)./c^2; TE CODE
+
+   % G_y(i,j)=-1*Dx_av.*Bz_at_x(i,j);   % Gy is at i+1/2,j    
+   
+   
+        G_y(i,j)=-1*Dx(i,j).*Bz_at_x(i,j);   % Ty is at Ex i think    
+
+    % will put tY
+[Tx ] = Calculate_Tx_MN( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+   % [Ty ] = Calculate_Ty_MN( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+[Ty,t1,t2,t3,t4 ] = Calculate_Ty_MN_v3( i,j,Ex,Ex_n_prev,Ey,Ey_n_prev,Dx,Dx_n_prev,...
+		Dy,Dy_n_prev,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+
     
-    
-        [Tx ] = Calculate_Tx_MN( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
-        [Ty ] = Calculate_Ty_MN_v2( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
-    
-      % POWER CALCULATIONS
-    Sx(i,j)=(G_x(i,j)).*c^2;
-    Sy(i,j)=(G_y(i,j)).*c^2;
-    
-if n>round(4*T/dt)
-Sy_flux(1,n)=sum(Sy(:,S_yloc)*dy);
-Sy_avg(1,n)=sum(Sy_flux(n-round(4*T/dt):n))/(round(4*T/dt));
 end
 
 
-
-end
-
-
-if (strcmp(model,'Chu'))
-    
+if (strcmp(model,'Chu'))    
     %[W]=calculate_W_AB_v2(i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Hz,Hz_n_prev,dx,dy,dt,W);  
-    
-    
-    % MOMENTUM and T CALCULATIONS
+    % W(source1_x-1:source1_x+1,gi)=0;
+
     Hz_at_y(i,j)=(1/4)*(Hz(i,j)+Hz(i-1,j)+Hz_n_prev(i,j)+Hz_n_prev(i-1,j)); 
-    Hz_at_x(i,j)=(1/4)*(Hz(i,j)+Hz(i,j-1)+Hz_n_prev(i,j)+Hz_n_prev(i,j-1));
-    
+    Hz_at_x(i,j)=(1/4)*(Hz(i,j)+Hz(i,j-1)+Hz_n_prev(i,j)+Hz_n_prev(i,j-1));    
 
     G_x_n_prev=G_x;        
-    G_x(i,j)=eps_o*mu_o.*(Ey(i,j).*Hz_at_y(i,j)); % Chu, EL and AB 
-    
-    G_y_n_prev=G_y;
-    G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j)); 
-
-      % POWER CALCULATIONS
-    Sx(i,j)=(G_x(i,j)).*c^2;
-    Sy(i,j)=(G_y(i,j)).*c^2;
-    
-if n>round(4*T/dt)
-Sy_flux(1,n)=sum(Sy(:,S_yloc)*dy);
-Sy_avg(1,n)=sum(Sy_flux(n-round(4*T/dt):n))/(round(4*T/dt));
-end
-
+    G_x(i,j)=eps_o*mu_o.*(Ey(i,j).*Hz_at_y(i,j)); % Chu, EL and AB  
+    Sx(i,j)=(Ey(i,j).*Hz_at_y(i,j));
 
     [ Tx] = Calculate_Tx_Chu(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );   
-    
-                 % 
-    [Ty,t1,t2,t3,t4 ] = Calculate_Ty_Chu( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
-   
-end
 
-
-if (strcmp(model,'EL'))
-    
-   % [W]=calculate_W_AB_v2(i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Hz,Hz_n_prev,dx,dy,dt,W);
-   
-    Hz_at_y(i,j)=(1/4)*(Hz(i,j)+Hz(i-1,j)+Hz_n_prev(i,j)+Hz_n_prev(i-1,j)); 
-    Hz_at_x(i,j)=(1/4)*(Hz(i,j)+Hz(i,j-1)+Hz_n_prev(i,j)+Hz_n_prev(i,j-1));
-    G_x_n_prev=G_x;        
-    G_x(i,j)=eps_o*mu_o.*(Ey(i,j).*Hz_at_y(i,j)); % Chu, EL and AB    
-
-    
     G_y_n_prev=G_y;
-    G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j));
-    
-      % POWER CALCULATIONS
-    Sx(i,j)=(G_x(i,j)).*c^2;
-    Sy(i,j)=(G_y(i,j)).*c^2;
-    
-if n>round(4*T/dt)
-Sy_flux(1,n)=sum(Sy(:,S_yloc)*dy);
-Sy_avg(1,n)=sum(Sy_flux(n-round(4*T/dt):n))/(round(4*T/dt));
+    G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j));               
+    [Ty,t1,t2,t3,t4 ] = Calculate_Ty_Chu( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
 end
-  
-                  % 
-    [Ty ] = Calculate_Ty_EL( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );           % 
-        [Tx] = Calculate_Tx_EL(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );   
 
+
+if (strcmp(model,'EL'))    
+      %  [W]=calculate_W_AB_v2(i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Hz,Hz_n_prev,dx,dy,dt,W);
+     %   W(source1_x-1:source1_x+1,gi)=0;
+
+        Hz_at_y(i,j)=(1/4)*(Hz(i,j)+Hz(i-1,j)+Hz_n_prev(i,j)+Hz_n_prev(i-1,j)); 
+        Hz_at_x(i,j)=(1/4)*(Hz(i,j)+Hz(i,j-1)+Hz_n_prev(i,j)+Hz_n_prev(i,j-1));
+        G_x_n_prev=G_x;        
+        G_x(i,j)=eps_o*mu_o.*(Ey(i,j).*Hz_at_y(i,j)); % Chu, EL and AB    
+        [Tx] = Calculate_Tx_EL(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );   
+        Sx(i,j)=(Ey(i,j).*Hz_at_y(i,j));
+        
+        G_y_n_prev=G_y;
+        G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j));                  % 
+        % Ty is derivatives about x location 
+        % Ty is at i+1/2, and in time at B
+      %  [Ty,t1,t2,t3,t4 ] = Calculate_Ty_EL_v3( i,j,Ex,Ex_n_prev,Ey,Ey_n_prev,Dx,Dx_n_prev,...
+   % Dy,Dy_n_prev,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );  
     
-    
-    
+   [Ty,t1,t2,t3,t4 ] = Calculate_Ty_EL( i,j,Ex,Ey,Dx,...
+    Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );  
 end
 
 if (strcmp(model,'AB'))
     
-    %[W]=calculate_W_AB_v2(i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Hz,Hz_n_prev,dx,dy,dt,W);      
+   % [W]=calculate_W_AB_v2(i,j,Ex,Ex_n_prev,Ey,Ey_n_prev,Hz,Hz_n_prev,dx,dy,dt,W); 
+   %  W(source1_x-1:source1_x+1,gi)=0;
+
     Hz_at_y(i,j)=(1/4)*(Hz(i,j)+Hz(i-1,j)+Hz_n_prev(i,j)+Hz_n_prev(i-1,j)); 
     Hz_at_x(i,j)=(1/4)*(Hz(i,j)+Hz(i,j-1)+Hz_n_prev(i,j)+Hz_n_prev(i,j-1));
     G_x_n_prev=G_x;        
     G_x(i,j)=eps_o*mu_o.*(Ey(i,j).*Hz_at_y(i,j)); % Chu, EL and AB    
-
-    
-    G_y_n_prev=G_y;
-    G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j));
-    
-          % POWER CALCULATIONS
-    Sx(i,j)=(G_x(i,j)).*c^2;
-    Sy(i,j)=(G_y(i,j)).*c^2;
-    
-if n>round(4*T/dt)
-Sy_flux(1,n)=sum(Sy(:,S_yloc)*dy);
-Sy_avg(1,n)=sum(Sy_flux(n-round(4*T/dt):n))/(round(4*T/dt));
-end
-
-
     [ Tx] = Calculate_Tx_AB(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );   
-%
-    [Ty ] = Calculate_Ty_AB( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+    Sx(i,j)=(Ey(i,j).*Hz_at_y(i,j));
+
+    G_y_n_prev=G_y;
+    G_y(i,j)=-1*eps_o*mu_o.*(Ex(i,j).*Hz_at_x(i,j));                  % 
+    %[Ty,t1,t2,t3,t4 ] = Calculate_Ty_AB( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+    
+    
+    [Ty,t1,t2,t3,t4 ] = Calculate_Ty_MN_v2( i,j,Ex,Ex_n_prev,Ey,Ey_n_prev,Dx,Dx_n_prev,...
+		Dy,Dy_n_prev,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
     
 end
 
 if (strcmp(model,'AMP'))
     
-        %[W]=calculate_W_MN(eps_o*c^2,i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Bz,Bz_n_prev,dx,dy,dt,W);    
+       % [W]=calculate_W_MN(eps_o*c^2,i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Bz,Bz_n_prev,dx,dy,dt,W);  
+     %    W(source1_x-1:source1_x+1,gi)=0;
+
         Bz_at_y(i,j)=(1/4)*(Bz(i,j)+Bz(i-1,j)+Bz_n_prev(i,j)+Bz_n_prev(i-1,j));   
         Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
         G_x_n_prev=G_x;        
         G_x(i,j)=eps_o*(Ey(i,j).*Bz_at_y(i,j));
+        [Tx] = Calculate_Tx_AMP(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );  
         G_y_n_prev=G_y;
         G_y(i,j)=-1*eps_o*(Ex(i,j).*Bz_at_x(i,j));                 % 
+        [Ty,t1,t2,t3,t4 ] = Calculate_Ty_AMP( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+       
+        
         Sx(i,j)=eps_o*(Ey(i,j).*Bz_at_y(i,j)).*c^2;
-          % POWER CALCULATIONS
-    Sx(i,j)=(G_x(i,j)).*c^2;
-    Sy(i,j)=(G_y(i,j)).*c^2;
-    
-if n>round(4*T/dt)
-Sy_flux(1,n)=sum(Sy(:,S_yloc)*dy);
-Sy_avg(1,n)=sum(Sy_flux(n-round(4*T/dt):n))/(round(4*T/dt));
+        %Sx(i,j)=mu_o.*(Dy(i,j).*Hz_at_y(i,j)).*c^2;
+        G_x(i,j)=Sx(i,j)/c^2;    
+
 end
+
+if (strcmp(model,'NA'))
     
-            [Tx] = Calculate_Tx_AMP(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );  
-        [Ty ] = Calculate_Ty_AMP( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+    
+       %[W]=calculate_W_MN(eps_o*c^2,i_W,j_W,Ex,Ex_n_prev,Ey,Ey_n_prev,Bz,Bz_n_prev,dx,dy,dt,W); 
+       % W(source1_x-1:source1_x+1,gi)=0;
+
+        Bz_at_y(i,j)=(1/4)*(Bz(i,j)+Bz(i-1,j)+Bz_n_prev(i,j)+Bz_n_prev(i-1,j));   
+        Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
+        G_x_n_prev=G_x;        
+        G_x(i,j)=eps_o*(Ey(i,j).*Bz_at_y(i,j));
+        [Tx] = Calculate_Tx_AMP(i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );  
+        G_y_n_prev=G_y;
+        G_y(i,j)=-1*eps_o*(Ex(i,j).*Bz_at_x(i,j));                 % 
+        [Ty,t1,t2,t3,t4 ] = Calculate_Ty_AMP( i,j,Ex,Ey,Dx,Dy,Hz,Hz_n_prev,Bz,Bz_n_prev,dx,dy );
+        Sx(i,j)=eps_o*(Ey(i,j).*Bz_at_y(i,j)).*c^2;
+        %Sx(i,j)=mu_o.*(Dy(i,j).*Hz_at_y(i,j)).*c^2;
+        G_x(i,j)=Sx(i,j)/c^2;    
+
+end
 
 
- 
-end
 
  
 %% Update Ex,Ey (n+1)
@@ -959,17 +959,9 @@ y_fx=y_fx./(y_norm_2-y_norm_1);
 [Xfx,Yfx]=meshgrid(x_fx,y_fx);
 
 % solve for fluid fx locations
-
-Nx_CFD=length(x_CFD);
-Ny_CFD=length(y_CFD);
-dx_norm=1/Nx_CFD;
-dy_norm=1/Ny_CFD;
-
-% x_fx_cfd=[0:1:Nx_CFD-1]./(Nx_CFD-1);
-% y_fx_cfd=[.5:1:Ny_CFD-1.5]./(Ny_CFD-1);
-
-y_fx_cfd=[0:1:Ny_fx-1]./(Ny_fx-1)+.5;
 x_fx_cfd=[0:1:Nx_fx-1]./(Nx_fx-1);
+
+y_fx_cfd=[0:1:Ny_fx-1]./(Ny_fx-1)+round(0.5/(Ny_fx-1));
 
 [XC YC]=meshgrid(x_fx_cfd,y_fx_cfd);
 fx_EM=interp2(Xfx,Yfx,fx_avg(nx1-1:nx2+1,ny1-1:ny2+1),XC,YC);
@@ -986,10 +978,8 @@ y_fy=y_fy-y_norm_1;
 y_fy=y_fy./(y_norm_2-y_norm_1);
 [Xfy,Yfy]=meshgrid(x_fy,y_fy);
 
-% x_fy_cfd=[.5:1:Nx_CFD-1.5]./(Nx_CFD-1);
-% y_fy_cfd=[0:1:Ny_CFD-1]./(Ny_CFD-1);
 
-x_fy_cfd=[0:1:Nx_fy-1]./(Nx_fy-1)+.5;
+x_fy_cfd=[0:1:Nx_fy-1]./(Nx_fy-1)+round(0.5/(Nx_fy-1));
 y_fy_cfd=[0:1:Ny_fy-1]./(Ny_fy-1);
 
 [XC YC]=meshgrid(x_fy_cfd,y_fy_cfd);
@@ -999,7 +989,9 @@ fy_EM(isnan(fy_EM))=0;
 
 Hz_EM=Hz(nx1:nx2,ny1:ny2);
 
-
+f_max=max([ max(max(abs(fy_EM))) max(max(abs(fx_EM))) ]);
+fx_EM=fx_EM./f_max;
+fy_EM=fy_EM./f_max;
 
 
 end
