@@ -1,4 +1,4 @@
-function [ Nf,xf,yf] = create_front_v2( r,x,y,dx,dy,circ_shift )
+function [ Nf,xf,yf] = create_front_v2( r,x,y,dx,dy )
 % Define front based on density 
 % This function will draw a single line countour around
 % a given density profile
@@ -9,8 +9,7 @@ front_make=contourc(x,y,r',1);
 xf_c=front_make(1,3:end-1);
 yf_c=front_make(2,3:end-1);
 
-xf_c=circshift(xf_c,circ_shift);
-xf_c=circshift(xf_c,circ_shift);
+
 
 
 Nf=length(xf_c); 

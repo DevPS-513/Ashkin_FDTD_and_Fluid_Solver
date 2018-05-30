@@ -166,8 +166,11 @@ end
     beam_recalculate_time=0.2*seconds;          % Wait this amount of time before recalculateing the force distribution
     beam_recalculate=round(beam_recalculate_time/dt);
   
-     beam_start_time=t(Nt)-4*beam_recalculate_time;    
-    beam_start=round(beam_start_time/dt);         % number of time steps before beam engages
+    beam_start_time=t(Nt)-4*beam_recalculate_time;  % this means for a total of 4 times, every .2 seconds
+                                                    % the EM force desnity
+                                                    % will be updated for
+                                                    % the new geometry.
+    beam_start=round(beam_start_time/dt);           % number of time steps before beam engages
    
     
     
@@ -262,7 +265,7 @@ end
     intercept=Ly/(1+lam_high/lam_low);  % Define where boundary between two liquids
                                         % should be
 
-                                        ratio_of_EM_force_to_gravity=20;
+    ratio_of_EM_force_to_gravity=25;
 % Initialize center of water source droplet droplet
     x_offset=7*dx;
     nx1=round(x_offset/dx)+1;
@@ -298,7 +301,7 @@ end
     
    % r(nx1:nx2,ny1:ny2)=rho2;
 
-    [Nf,xf,yf]=create_front_v2(r,x,y,dx,dy,60);
+    [Nf,xf,yf]=create_front_v2(r,x,y,dx,dy);
  
 
     mu=mu1.*(r==rho1)+mu2.*(r==rho2);
@@ -351,8 +354,8 @@ if plot_on==1
     h_32=plot3(xf(3:Nf-4),yf(3:Nf-4),10.*ones(size(xf(3:Nf-4))),'color','black','linewidth',1.9);
     Nf
     length(xf)
-    xlabel('x')
-    ylabel('y')
+    xlabel('x (m)')
+    ylabel('y (m)')
     axis equal
     title(strcat(model,'_{',source_direction,'}'))
 end
@@ -465,10 +468,16 @@ disp([str])
     beam_refresh_counter=beam_refresh_counter+1;
    
  % Refresh Boundary Conditions for wall velocities
-     u(:,end)=2*(u_wall_bottom)-u(:,end-1);
-     u(:,1)=2*(u_wall_top)-u(:,2); 
-     v(1,:)=2*v_wall_left-v(2,:);
-     v(end,:)=2*v_wall_right-v(end-1,:);   
+%      u(:,end)=2*(u_wall_bottom)-u(:,end-1);
+%      u(:,1)=2*(u_wall_top)-u(:,2); 
+%      v(1,:)=2*v_wall_left-v(2,:);
+%      v(end,:)=2*v_wall_right-v(end-1,:);   
+     
+     % tangential velocity at boundaries
+    u(1:Nx+1,1)=        -u(1:Nx+1,2);
+    u(1:Nx+1,Ny+2)=     -u(1:Nx+1,Ny+1);
+    v(1,1:Ny+1)=        -v(2,1:Ny+1);
+    v(Nx+2,1:Ny+1)=     -v(Nx+1,1:Ny+1);
 
 % SURFACE TESNSION
     
