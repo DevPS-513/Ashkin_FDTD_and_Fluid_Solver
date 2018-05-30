@@ -595,7 +595,7 @@ if (strcmp(model,'MN'))
 %    W(source1_x-1:source1_x+1,gi)=0;                                   % Remove energy at source location
 
     Bz_at_y(i,j)=(1/4)*(Bz(i,j)+Bz(i-1,j)+Bz_n_prev(i,j)+Bz_n_prev(i-1,j));
-  Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
+    Bz_at_x(i,j)=(1/4)*(Bz(i,j)+Bz(i,j-1)+Bz_n_prev(i,j)+Bz_n_prev(i,j-1));
   
   % Bring Bz in space to Dx, but not in time
   
@@ -611,7 +611,6 @@ if (strcmp(model,'MN'))
 	 
 	 % bring Dx to B in time
    
-        %Dx_av=(0.5).*(Dx(i,j)+Dx(i,j+1)); % only to place Ty at Bz
         Dx_av=(0.5).*(Dx(i,j)+Dx_n_prev(i,j)); % only to place Ty at Bz
 
 	% Bring Dx to B temporally

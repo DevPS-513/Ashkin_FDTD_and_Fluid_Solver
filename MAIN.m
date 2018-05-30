@@ -63,19 +63,15 @@ addpath functions
 addpath material_data
 
 
-% models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
-
-  
-models=cellstr(['AB ';'EL ';'AMP';'Chu']);
+ models=cellstr(['AB ';'MN ';'EL ';'AMP';'Chu']);
 s_cases=cellstr(['down';'up  ']);
-
 mkdir('./output_data/')
 
 
 
 for model_j=1:length(models)
     
-    for case_j=1:length(s_cases)
+   for case_j=1:length(s_cases)
    keep models s_cases model_j case_j
    clf
    close all
