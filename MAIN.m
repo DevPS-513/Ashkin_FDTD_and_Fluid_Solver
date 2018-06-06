@@ -111,41 +111,8 @@ for model_j=1:length(models)
 % Figure Positions
 % The figures are placed in a 3x3 array viewed on the screen
 
-    p1 = [1 sh/2 sw/3 sh/2];
-    p2 = [sw/3 sh/2 sw/3 sh/2];
-    p3 = [1 35 sw/3 sh/2];
-    p4 = [sw/3 35 sw/3 sh/2];
-    p5 = [sw/3+p3(3) sh/2 sw/3 sh/2];
     
-if plot_on==1
-    
-    f_1=figure(1);
-    set(f_1,'name','Front and <F>')
-    set(f_1,'DefaulttextFontSize',14)
-    set(f_1,'OuterPosition',p1)
 
-    f_2=figure(2);
-    set(f_2,'name','index in FDTD')
-    set(f_2,'DefaulttextFontSize',14)
-    set(f_2,'OuterPosition',p2)
-
-    f_3=figure(3);
-    set(f_3,'name','Density')
-    set(f_3,'DefaulttextFontSize',14)
-    set(f_3,'OuterPosition',p3)
-
-    f_4=figure(4);
-    set(f_4,'name','Hz_field')
-    set(f_4,'DefaulttextFontSize',14)
-    set(f_4,'OuterPosition',p4)
-
-    f_5=figure(5);
-    set(f_5,'name','\eta in FDTD')
-    set(f_5,'DefaulttextFontSize',14)
-    set(f_5,'OuterPosition',p5)
-
-
-end
 
 
 
@@ -157,22 +124,21 @@ end
     Ny=72;
     source_direction=s_case;
 
-    time_steps=12500;
-    dt=.00125;                  % CFD time step
-    Nt=time_steps;
-    t=[0:1:time_steps]*dt;
+    sim_time=3.125*seconds;
+    dt=.0125/10;                  % CFD time step
+    Nt=round(sim_time/dt);
+    
+    t=[0:1:Nt]*dt;
 
    
     beam_recalculate_time=0.2*seconds;          % Wait this amount of time before recalculateing the force distribution
     beam_recalculate=round(beam_recalculate_time/dt);
   
-    beam_start_time=t(Nt)-4*beam_recalculate_time;  % this means for a total of 4 times, every .2 seconds
+    beam_start_time=t(Nt)-8*beam_recalculate_time;  % this means for a total of 4 times, every .2 seconds
                                                     % the EM force desnity
                                                     % will be updated for
                                                     % the new geometry.
-    beam_start=round(beam_start_time/dt);           % number of time steps before beam engages
-   
-    
+    beam_start=round(beam_start_time/dt);           % number of time steps before beam engages    
     
     beam_refresh_counter=0;                         % Counter that rolls over every
     
@@ -197,8 +163,8 @@ end
     min_rho=min([ rho1 rho2]);
     rho_diff=abs(rho1-rho2)/2;
 
-    surf_tension=0.7;            % Surface Tension Coefficient
-    mu1=.01;
+    surf_tension=0.65;            % Surface Tension Coefficient
+    mu1=.04;
     mu2=2*mu1;
     max_mu=max([mu1 mu2]);
 
@@ -265,7 +231,7 @@ end
     intercept=Ly/(1+lam_high/lam_low);  % Define where boundary between two liquids
                                         % should be
 
-    ratio_of_EM_force_to_gravity=25;
+    ratio_of_EM_force_to_gravity=45;
 % Initialize center of water source droplet droplet
     x_offset=7*dx;
     nx1=round(x_offset/dx)+1;
@@ -326,9 +292,48 @@ end
 
     fx=zeros(size(u));
     fy=zeros(size(v));     
+    
+    
+    
+    
+    
+    
  
     %% FIGURE CREATE
 if plot_on==1
+           
+    p1 = [1 sh/2 sw/3 sh/2];
+    p2 = [sw/3 sh/2 sw/3 sh/2];
+    p3 = [1 35 sw/3 sh/2];
+    p4 = [sw/3 35 sw/3 sh/2];
+    p5 = [sw/3+p3(3) sh/2 sw/3 sh/2];
+      
+    f_1=figure(1);
+    set(f_1,'name','Front and <F>')
+    set(f_1,'DefaulttextFontSize',14)
+    set(f_1,'OuterPosition',p1)
+
+    f_2=figure(2);
+    set(f_2,'name','index in FDTD')
+    set(f_2,'DefaulttextFontSize',14)
+    set(f_2,'OuterPosition',p2)
+
+    f_3=figure(3);
+    set(f_3,'name','Density')
+    set(f_3,'DefaulttextFontSize',14)
+    set(f_3,'OuterPosition',p3)
+
+    f_4=figure(4);
+    set(f_4,'name','Hz_field')
+    set(f_4,'DefaulttextFontSize',14)
+    set(f_4,'OuterPosition',p4)
+
+    f_5=figure(5);
+    set(f_5,'name','\eta in FDTD')
+    set(f_5,'DefaulttextFontSize',14)
+    set(f_5,'OuterPosition',p5)
+   
+    
     % f_2=figure(1);
     % h_11=plot(xf(1:Nf)./(x(end)-x(1)),yf(1:Nf)./(x(end)-x(1)));
     % xlabel('x-axis[m]')
@@ -358,12 +363,17 @@ if plot_on==1
     ylabel('y (m)')
     axis equal
     title(strcat(model,'_{',source_direction,'}'))
+    
+    
+    
+    
+    
 end
 
 % Prepare figure variables 
 
     fig_counter=0;                      % Counter to set plot refresh
-    N_fig=round(time_steps/fig_count);  % number of steps until a figure refresh
+    N_fig=round(Nt/fig_count);  % number of steps until a figure refresh
 
 %     fx_fig=zeros(Nx+1,Ny+2,N_fig);
 %     fy_fig=zeros(Nx+2,Ny+1,N_fig);
@@ -381,7 +391,7 @@ end
     [Nx_fx, Ny_fx]=size(u');
     [Nx_fy, Ny_fy]=size(v');
 
-for n=1:time_steps
+for n=1:Nt
     
     
 
@@ -443,9 +453,9 @@ if n>beam_start
 
         
         
-       [fx_EM, fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg]=FDTD(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x,y,xf_EM,yf_EM,er_low,er_high,LAMBDA,dx_EM,beam_width,x_size,y_size,a,sim_cycles,model,plot_on_EM,source_direction);
+       [fx_EM, fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg,x_EM_fx,y_EM_fx,x_EM_fy,y_EM_fy]=FDTD(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x,y,xf_EM,yf_EM,er_low,er_high,LAMBDA,dx_EM,beam_width,x_size,y_size,a,sim_cycles,model,plot_on_EM,source_direction);
     beam_refresh_counter=0;
-    
+
     % fy_EM and fx_EM are normalized to the maximum force value that
     % exists.
     % Scale force (note that gravity is '100') 

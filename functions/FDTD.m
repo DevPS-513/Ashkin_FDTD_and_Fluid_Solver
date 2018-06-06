@@ -1,7 +1,7 @@
 
 
 
-function [fx_EM,fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg]=FDTD(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x_CFD,y_CFD,xf_locs,yf_locs,er_low,er_high,LAMBDA,dx,beam_width,x_size,y_size,a,sim_cycles,model,plot_on,source_direction)
+function [fx_EM,fy_EM,eta_EM,Hz_EM,Sy_avg,fx_avg,fy_avg,x_fx_cfd,y_fx_cfd,x_fy_cfd,y_fy_cfd]=FDTD(Nx_fx,Ny_fx,Nx_fy,Ny_fy,x_CFD,y_CFD,xf_locs,yf_locs,er_low,er_high,LAMBDA,dx,beam_width,x_size,y_size,a,sim_cycles,model,plot_on,source_direction)
 
 
 % Define SI units
@@ -742,7 +742,6 @@ y_fx=y_fx./(y_norm_2-y_norm_1);
 
 % solve for fluid fx locations
 x_fx_cfd=[0:1:Nx_fx-1]./(Nx_fx-1);
-
 y_fx_cfd=[0:1:Ny_fx-1]./(Ny_fx-1)+round(0.5/(Ny_fx-1));
 
 [XC YC]=meshgrid(x_fx_cfd,y_fx_cfd);
@@ -766,6 +765,8 @@ y_fy_cfd=[0:1:Ny_fy-1]./(Ny_fy-1);
 
 [XC YC]=meshgrid(x_fy_cfd,y_fy_cfd);
 
+
+
 fy_EM=interp2(Xfy,Yfy,fy_avg(nx1-1:nx2+1,ny1-1:ny2+1),XC,YC);
 fy_EM(isnan(fy_EM))=0;
 
@@ -774,6 +775,7 @@ Hz_EM=Hz(nx1:nx2,ny1:ny2);
 f_max=max([ max(max(abs(fy_EM))) max(max(abs(fx_EM))) ]);
 fx_EM=fx_EM./f_max;
 fy_EM=fy_EM./f_max;
+
 
 
 end
