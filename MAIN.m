@@ -231,7 +231,7 @@ end
     intercept=Ly/(1+lam_high/lam_low);  % Define where boundary between two liquids
                                         % should be
 
-    ratio_of_EM_force_to_gravity=45;
+    ratio_of_EM_force_to_gravity=40;
 % Initialize center of water source droplet droplet
     x_offset=7*dx;
     nx1=round(x_offset/dx)+1;
